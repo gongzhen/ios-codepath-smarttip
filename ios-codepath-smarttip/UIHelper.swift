@@ -11,6 +11,7 @@ import UIKit
 class UIHelper {
 
     class func createLabel(labelAttributes attrbutes: [String: Any]) -> UILabel {
+        // todo: added checking for dictionary
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = (attrbutes["translatesAutoresizingMaskIntoConstraints"] as! Bool)
         label.text = (attrbutes["text"] as! String)
@@ -23,6 +24,7 @@ class UIHelper {
     }
     
     class func createTextField(textFieldAttributes attrbutes: [String: Any]) -> UITextField {
+        // todo: added checking for dictionary
         let textField = UITextField()
         textField.translatesAutoresizingMaskIntoConstraints = (attrbutes["translatesAutoresizingMaskIntoConstraints"] as! Bool)
         textField.placeholder = (attrbutes["placeholder"] as! String)
@@ -31,6 +33,9 @@ class UIHelper {
         textField.adjustsFontSizeToFitWidth = (attrbutes["adjustsFontSizeToFitWidth"] as! Bool)
         textField.keyboardType = (attrbutes["keyboardType"] as! UIKeyboardType)
         textField.backgroundColor = (attrbutes["backgroundColor"] as! UIColor)
+        textField.layer.cornerRadius = CGFloat(attrbutes["cornerRadius"] as! Double)
+        textField.layer.borderWidth = CGFloat(attrbutes["borderWidth"] as! Double)
+        textField.layer.borderColor = (attrbutes["borderColor"] as! CGColor)
         return textField
     }
     

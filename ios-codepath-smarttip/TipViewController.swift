@@ -31,6 +31,8 @@ class TipViewController: UIViewController, UIGestureRecognizerDelegate, UITextFi
     var costPerPersonLabel: UILabel!
     
     var tipControl: UISegmentedControl!
+    
+    var numberOfPeopleByTextField: Int?
 
     // http://blog.scottlogic.com/2014/11/20/swift-initialisation.html
     // https://theswiftdev.com/2015/08/05/swift-init-patterns/
@@ -42,16 +44,20 @@ class TipViewController: UIViewController, UIGestureRecognizerDelegate, UITextFi
         self.currencyFormatter = NSNumberFormatter()
         self.currencyFormatter.numberStyle = .CurrencyStyle
         super.init(nibName: nil, bundle: nil)
-        let settingsBarButtonItem = UIBarButtonItem(title: "Setting", style: UIBarButtonItemStyle.Plain, target: self, action: #selector(TipViewController.onSettingsButton))
+        let settingsBarButtonItem = UIBarButtonItem(title: NSLocalizedString("SETTING", comment: ""), style: UIBarButtonItemStyle.Plain, target: self, action: #selector(TipViewController.onSettingsButton))
         self.navigationItem.rightBarButtonItem = settingsBarButtonItem
-        
         // set tip percentage.
         let userDefualts = NSUserDefaults.standardUserDefaults()
-        if userDefualts.valueForKey("tipPercentElements") == nil {
-            let tipPercentElements = [18, 20, 25]
-            userDefualts.setObject(tipPercentElements, forKey: "tipPercentElements")
-            userDefualts.synchronize()
-        }
+        
+        let tipPercentElements = [18, 20, 25]
+        // registerDefaults is safe to check if key is existed.
+        userDefualts.registerDefaults(["tipPercentElements" : tipPercentElements])
+        userDefualts.synchronize()
+        // if userDefualts.valueForKey("tipPercentElements") == nil {
+        //  let tipPercentElements = [18, 20, 25]
+        //  userDefualts.setObject(tipPercentElements, forKey: "tipPercentElements")
+        //  userDefualts.synchronize()
+        // }
         
         if userDefualts.valueForKey("numberOfPeoples") == nil {
             // set persons for spliting tip
@@ -63,6 +69,10 @@ class TipViewController: UIViewController, UIGestureRecognizerDelegate, UITextFi
     
     func onSettingsButton() {
         let settingsViewController = SettingsViewController()
+        settingsViewController.backClosure = { (number: Int?) -> Void in
+            self.numberOfPeopleByTextField = number
+            debugPrint("numberOfPeopleByTextField: \(self.numberOfPeopleByTextField)")
+        }
         self.navigationController?.pushViewController(settingsViewController, animated: false)
         self.view.endEditing(true)
     }
@@ -71,17 +81,17 @@ class TipViewController: UIViewController, UIGestureRecognizerDelegate, UITextFi
     override func loadView() {
         self.view = UIView()
         
-        var labelAttributes: [String: Any] = ["translatesAutoresizingMaskIntoConstraints": false, "text": "Bill", "backgroundColor": UIColor.clearColor(), "font": UIFont.systemFontOfSize(15.0), "textAlignment": NSTextAlignment.Left, "adjustsFontSizeToFitWidth": true]
+        var labelAttributes: [String: Any] = ["translatesAutoresizingMaskIntoConstraints": false, "text": NSLocalizedString("BILL", comment: ""), "backgroundColor": UIColor.clearColor(), "font": UIFont.systemFontOfSize(15.0), "textAlignment": NSTextAlignment.Left, "adjustsFontSizeToFitWidth": true]
         self.billLabel = UIHelper.createLabel(labelAttributes: labelAttributes)
         self.view.addSubview(self.billLabel)
-        
-        labelAttributes = ["translatesAutoresizingMaskIntoConstraints": false, "placeholder": currencyFormatter.currencySymbol, "backgroundColor": UIColor.clearColor(), "font": UIFont.systemFontOfSize(15.0), "textAlignment": NSTextAlignment.Right, "adjustsFontSizeToFitWidth": true, "keyboardType": UIKeyboardType.DecimalPad]
+
+        labelAttributes = ["translatesAutoresizingMaskIntoConstraints": false, "placeholder": currencyFormatter.currencySymbol, "backgroundColor": UIColor.clearColor(), "font": UIFont.systemFontOfSize(15.0), "textAlignment": NSTextAlignment.Right, "adjustsFontSizeToFitWidth": true, "keyboardType": UIKeyboardType.DecimalPad, "cornerRadius": 1.0, "borderWidth": 0.0, "borderColor": UIColor.clearColor().CGColor]
         self.billTxtField = UIHelper.createTextField(textFieldAttributes: labelAttributes)
         self.billTxtField.delegate = self
         self.billTxtField.addTarget(self, action: #selector(TipViewController.textFieldDidChange), forControlEvents: UIControlEvents.EditingChanged)
         self.view.addSubview(self.billTxtField)
         
-        labelAttributes = ["translatesAutoresizingMaskIntoConstraints": false, "text": "Tip", "backgroundColor": UIColor.clearColor(), "font": UIFont.systemFontOfSize(15.0), "textAlignment": NSTextAlignment.Left, "adjustsFontSizeToFitWidth": true]
+        labelAttributes = ["translatesAutoresizingMaskIntoConstraints": false, "text": NSLocalizedString("TIP", comment: ""), "backgroundColor": UIColor.clearColor(), "font": UIFont.systemFontOfSize(15.0), "textAlignment": NSTextAlignment.Left, "adjustsFontSizeToFitWidth": true]
         self.tipLabel = UIHelper.createLabel(labelAttributes: labelAttributes)
         self.view.addSubview(self.tipLabel)
                 
@@ -94,7 +104,7 @@ class TipViewController: UIViewController, UIGestureRecognizerDelegate, UITextFi
         self.separateView.translatesAutoresizingMaskIntoConstraints = false
         self.view.addSubview(self.separateView)
         
-        labelAttributes = ["translatesAutoresizingMaskIntoConstraints": false, "text": "Total", "backgroundColor": UIColor.clearColor(), "font": UIFont.systemFontOfSize(16.0), "textAlignment": NSTextAlignment.Left, "adjustsFontSizeToFitWidth": true]
+        labelAttributes = ["translatesAutoresizingMaskIntoConstraints": false, "text":NSLocalizedString("TOTAL", comment: ""), "backgroundColor": UIColor.clearColor(), "font": UIFont.systemFontOfSize(16.0), "textAlignment": NSTextAlignment.Left, "adjustsFontSizeToFitWidth": true]
         self.totalLabel = UIHelper.createLabel(labelAttributes: labelAttributes)
         self.view.addSubview(self.totalLabel)
         
@@ -102,7 +112,7 @@ class TipViewController: UIViewController, UIGestureRecognizerDelegate, UITextFi
         self.totalAmountLabel = UIHelper.createLabel(labelAttributes: labelAttributes)
         self.view.addSubview(self.totalAmountLabel)
         
-        labelAttributes = ["translatesAutoresizingMaskIntoConstraints": false, "text": "Per Person (Split by 1)", "backgroundColor": UIColor.clearColor(), "font": UIFont.systemFontOfSize(14.0), "textAlignment": NSTextAlignment.Left, "adjustsFontSizeToFitWidth": true]
+        labelAttributes = ["translatesAutoresizingMaskIntoConstraints": false, "text": NSLocalizedString("PER PERSON (SPLIT BY 1)", comment: ""), "backgroundColor": UIColor.clearColor(), "font": UIFont.systemFontOfSize(14.0), "textAlignment": NSTextAlignment.Left, "adjustsFontSizeToFitWidth": true]
         self.perPersonLabel = UIHelper.createLabel(labelAttributes: labelAttributes)
         self.view.addSubview(self.perPersonLabel)
         
@@ -292,7 +302,14 @@ class TipViewController: UIViewController, UIGestureRecognizerDelegate, UITextFi
         self.tipAmountLabel.text = String(currencyFormatter.stringFromNumber(tipAmount)!)
         self.totalAmountLabel.text = String(currencyFormatter.stringFromNumber(totalAmount)!)
         if let numberOfPeople = userDefaults.objectForKey("numberOfPeople") as? Int {
-            let tipPerPerson: Double = totalAmount / Double(numberOfPeople)
+            var tipPerPerson: Double
+            if let numberOfPeopleByTextField = self.numberOfPeopleByTextField {
+                tipPerPerson = totalAmount / Double(numberOfPeopleByTextField)
+            } else {
+                tipPerPerson = totalAmount / Double(numberOfPeople)
+            }
+            
+
             self.costPerPersonLabel.text = String(currencyFormatter.stringFromNumber(tipPerPerson)!)
         }
     }
@@ -313,9 +330,12 @@ class TipViewController: UIViewController, UIGestureRecognizerDelegate, UITextFi
                 self.tipControl.setTitle(item, forSegmentAtIndex: index)
             }
         }
+
         
-        if let numberOfPeople = userDefaults.objectForKey("numberOfPeople") as? Int {
-            self.perPersonLabel.text = "Per Person (Split by \(String(numberOfPeople)))"
+        if let numberOfPeopleByTextField = self.numberOfPeopleByTextField {
+            self.perPersonLabel.text = String(format: NSLocalizedString("PER PERSON (SPLIT BY %d)", comment: ""), numberOfPeopleByTextField)
+        } else if let numberOfPeople = userDefaults.objectForKey("numberOfPeople") as? Int {
+            self.perPersonLabel.text = String(format: NSLocalizedString("PER PERSON (SPLIT BY %d)", comment: ""), numberOfPeople)
         }
         calcTip()
     }

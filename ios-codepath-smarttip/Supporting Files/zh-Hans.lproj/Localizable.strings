@@ -1,0 +1,17 @@
+/* 
+  Localizable.strings
+  ios-codepath-smarttip
+
+  Created by gongzhen on 10/2/16.
+  Copyright © 2016 gongzhen. All rights reserved.
+*/
+
+"BILL" = "账单";
+"TIP" = "小费";
+"SETTING" = "设置";
+"TOTAL" = "总共";
+"PER PERSON (SPLIT BY %d)" = "每人应付(分为 %d 人)";
+"DEFAULT TIP PERCENTAGE" = "默认小费百分比";
+"NUMBER OF PEOPLE" = "人数";
+"BACK" = "返回";
+

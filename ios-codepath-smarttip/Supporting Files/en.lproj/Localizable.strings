@@ -1,0 +1,18 @@
+/* 
+  Localizable.strings
+  ios-codepath-smarttip
+
+  Created by gongzhen on 10/2/16.
+  Copyright © 2016 gongzhen. All rights reserved.
+*/
+
+"BILL" = "Bill";
+"TIP" = "Tip";
+"SETTING" = "Setting";
+"TOTAL" = "Total";
+"PER PERSON (SPLIT BY %d)" = "Per Person (Split by %d)";
+"DEFAULT TIP PERCENTAGE" = "Default Tip Percentage";
+"NUMBER OF PEOPLE" = "Number Of People";
+"BACK" = "Back";
+
+

@@ -8,6 +8,8 @@
 
 import UIKit
 
+typealias InputClosureType = (Int?) -> Void
+
 class SettingsViewController: UIViewController {
 
     var percentageSettingLabel: UILabel!
@@ -17,13 +19,16 @@ class SettingsViewController: UIViewController {
     var defaultNumOfPeopleLabel: UILabel!
     var percentageSettingControl: UISegmentedControl!    
     var defaultNumOfPeopleControl: UISegmentedControl!
+    var numberOfPeopleTextField: UITextField!
+    
+    var backClosure: InputClosureType?
     
     override func loadView() {
         let userDefaults = NSUserDefaults.standardUserDefaults()
         
         self.view = UIView()
 
-        var labelAttributes: [String: Any] = ["translatesAutoresizingMaskIntoConstraints": false, "text": "Default Tip Percentage", "backgroundColor": UIColor.clearColor(), "font": UIFont.systemFontOfSize(15.0), "textAlignment": NSTextAlignment.Left, "adjustsFontSizeToFitWidth": true]
+        var labelAttributes: [String: Any] = ["translatesAutoresizingMaskIntoConstraints": false, "text": NSLocalizedString("DEFAULT TIP PERCENTAGE", comment: ""), "backgroundColor": UIColor.clearColor(), "font": UIFont.systemFontOfSize(15.0), "textAlignment": NSTextAlignment.Left, "adjustsFontSizeToFitWidth": true]
         self.percentageSettingLabel = UIHelper.createLabel(labelAttributes: labelAttributes)
         self.view.addSubview(self.percentageSettingLabel)
         
@@ -60,7 +65,7 @@ class SettingsViewController: UIViewController {
         self.view.addSubview(self.percentageSettingView)
         
         // percentageSettingControl end
-        labelAttributes = ["translatesAutoresizingMaskIntoConstraints": false, "text": "Default Tip Percentage", "backgroundColor": UIColor.clearColor(), "font": UIFont.systemFontOfSize(15.0), "textAlignment": NSTextAlignment.Left, "adjustsFontSizeToFitWidth": true]
+        labelAttributes = ["translatesAutoresizingMaskIntoConstraints": false, "text": NSLocalizedString("NUMBER OF PEOPLE", comment: ""), "backgroundColor": UIColor.clearColor(), "font": UIFont.systemFontOfSize(15.0), "textAlignment": NSTextAlignment.Left, "adjustsFontSizeToFitWidth": true]
         self.defaultNumOfPeopleLabel = UIHelper.createLabel(labelAttributes: labelAttributes)
         self.view.addSubview(self.defaultNumOfPeopleLabel)
         
@@ -77,6 +82,23 @@ class SettingsViewController: UIViewController {
         
         self.defaultNumOfPeopleControl.addTarget(self, action: #selector(SettingsViewController.defaultNumOfPeopleChange(_:)), forControlEvents: UIControlEvents.ValueChanged)
         self.view.addSubview(self.defaultNumOfPeopleControl)
+        
+        
+        labelAttributes.removeAll()
+        labelAttributes = ["translatesAutoresizingMaskIntoConstraints": false,
+                           "placeholder": NSLocalizedString("NUMBER OF PEOPLE", comment: ""),
+                           "backgroundColor": UIColor.clearColor(),
+                           "font": UIFont.systemFontOfSize(15.0),
+                           "textAlignment": NSTextAlignment.Left,
+                           "adjustsFontSizeToFitWidth": true,
+                           "keyboardType": UIKeyboardType.NumberPad,
+                           "borderColor": UIColor.blueColor().CGColor,
+                           "borderWidth": 1.0,
+                           "cornerRadius": 8.0]
+        self.numberOfPeopleTextField = UIHelper.createTextField(textFieldAttributes: labelAttributes)
+        
+        self.numberOfPeopleTextField.borderStyle = UITextBorderStyle.Line
+        self.view.addSubview(self.numberOfPeopleTextField)
     }
     
     func defaultPercentChange(sender: UISegmentedControl) {
@@ -96,7 +118,6 @@ class SettingsViewController: UIViewController {
             defaults.setInteger(1, forKey: "numberOfPeopleIndex")
             defaults.synchronize()
         }
-        
     }
     
     func plusButtonAction(sender: UIButton) {
@@ -143,10 +164,42 @@ class SettingsViewController: UIViewController {
         self.percentageSettingControl.selectedSegmentIndex = selectedSegmentIndex
         self.defaultNumOfPeopleControl.selectedSegmentIndex = numberOfPeopleIndex
         
+        // replace the default back button
+        self.navigationController?.interactivePopGestureRecognizer?.enabled = false
+        self.navigationItem.setHidesBackButton(true, animated: false)
+        let backButton = UIBarButtonItem(title: NSLocalizedString("BACK", comment: ""), style: UIBarButtonItemStyle.Plain, target: self, action: #selector(SettingsViewController.backButtonPressed))
+        self.navigationItem.leftBarButtonItem = backButton
+        
         configurePercentageSettingLabelPositions()
         configurePercentageSettingViewPositions()
         configureDefaultNumOfPeopleLabelPosition()
         configureDefaultNumOfPeopleControlPosition()
+        configureNumberOfPeopleTextField()
+    }
+    
+    // http://stackoverflow.com/questions/8228411/detecting-when-the-back-button-is-pressed-on-a-navbar
+    func backButtonPressed() {
+        if let backClosure = self.backClosure {
+            if let numberOfPeople = self.numberOfPeopleTextField.text where numberOfPeople != "" {
+                if let num = validNumberOfPeople(numberOfPeople) {
+                    debugPrint("backButtonPressed: \(num)")
+                    backClosure(num)
+                }
+            } else {
+                debugPrint("backButtonPressed is nill: \(self.numberOfPeopleTextField.text)")
+                backClosure(nil)
+            }
+        }
+        self.navigationController?.popViewControllerAnimated(true)
+    }
+    
+    func validNumberOfPeople(number: String?) -> Int? {
+        if let number = number, num = Int(number) {
+            if num > 0 {
+                return num
+            }
+        }
+        return nil
     }
     
     override func viewWillDisappear(animated: Bool) {
@@ -242,11 +295,25 @@ class SettingsViewController: UIViewController {
         
         NSLayoutConstraint(item: self.defaultNumOfPeopleControl, attribute: .Leading, relatedBy: .Equal, toItem: self.percentageSettingControl, attribute: .Leading, multiplier: 1.0, constant: 0.0).active = true
         NSLayoutConstraint(item: self.defaultNumOfPeopleControl, attribute: .Trailing, relatedBy: .Equal, toItem: self.percentageSettingControl, attribute: .Trailing, multiplier: 1.0, constant: 0.0).active = true
+    }
+    
+    func configureNumberOfPeopleTextField() {
+        let views = ["defaultNumOfPeopleControl": self.defaultNumOfPeopleControl, "numberOfPeopleTextField" : self.numberOfPeopleTextField]
+        let metrics:[String: CGFloat] = ["textFieldHeight": 21.0, "topSpace": 20.0]
         
+        // textField height
+        NSLayoutConstraint(item: self.numberOfPeopleTextField, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1.0, constant: metrics["textFieldHeight"]!).active = true
+
+        let textFieldVerticalPosition = NSLayoutConstraint.constraintsWithVisualFormat("V:[defaultNumOfPeopleControl]-(topSpace)-[numberOfPeopleTextField]", options:NSLayoutFormatOptions(rawValue: 0), metrics: metrics, views: views)
+        self.view.addConstraints(textFieldVerticalPosition)
+
+        NSLayoutConstraint(item: self.numberOfPeopleTextField, attribute: .Leading, relatedBy: .Equal, toItem: self.defaultNumOfPeopleControl, attribute: .Leading, multiplier: 1.0, constant: 0.0).active = true
+        NSLayoutConstraint(item: self.numberOfPeopleTextField, attribute: .Width, relatedBy: .Equal, toItem: self.defaultNumOfPeopleControl, attribute: .Width, multiplier: 0.5, constant: self.view.frame.size.width).active = true
     }
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+    
 }

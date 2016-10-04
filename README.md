@@ -12,6 +12,7 @@ The following **required** functionality is complete:
 
 * [ ] User can enter a bill amount, choose a tip percentage, and see the tip and total values.
 * [ ] Settings page to change the default tip percentage.
+* [ ] App supports Chinese localization.
 
 The following **optional** features are implemented:
 * [ ] Remembering the bill amount across app restarts (if <10mins)
